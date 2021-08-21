@@ -1,4 +1,6 @@
-addprocs(5)
+using Distributed
+print("hello")
+addprocs(0)
 ################
 #My local machine has 6 processors
 #CYCLOPS is written to use them

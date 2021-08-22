@@ -1,5 +1,6 @@
 using Distributed
-addprocs(0)
+# change it to z
+addprocs(5)
 ################
 #My local machine has 6 processors
 #CYCLOPS is written to use them
@@ -113,7 +114,7 @@ print("estimated_magnitudes1", estimated_magnitudes1 , "estimated_phaselist1", e
 # I also think a cross validation error is the right way to choose the proper network complexity
 # We can discuss this
 ################################## 
-pvals=multicore_backgroundstatistics_global_eigen(seed_data1,outs1,N_best,total_background_num,global_metrics1)
+# pvals=multicore_backgroundstatistics_global_eigen(seed_data1,outs1,N_best,total_background_num,global_metrics1)
 ###################################
 
 # truetimes=mod.(Array{Float64}(alldata_times[timestamped_samples]),24)

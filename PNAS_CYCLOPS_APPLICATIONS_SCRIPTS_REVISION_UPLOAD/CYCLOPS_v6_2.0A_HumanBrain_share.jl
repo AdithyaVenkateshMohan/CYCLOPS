@@ -48,7 +48,7 @@ N_best =10 # Number of random initial conditions to try for each optimization
 total_background_num=10; # Number of background runs for global background refrence distribution (bootsrap) for reall runs should be much higher
 n_cores=5; # Number of machine cores
 ############################################################
-homologuedir = "E:\\AI\\Medical\\Julia-Kri\\CYCLOPS\\SeedGenes\\"
+homologuedir = "..\\SeedGenes\\"
 cd(homologuedir)
 seed_homologues1=readdlm("Human_UbiquityCyclers.csv",',');
 homologue_symbol_list1=seed_homologues1[2:end,2];
@@ -61,8 +61,8 @@ MaxSeeds                =10000
 
 using Random
 Random.seed!(12345);
-indir = "E:\\AI\\Medical\\Julia-Kri\\data\\"
-cd(indir);
+# indir = "..\\SeedGenes\\"
+# cd(indir);
 fullnonseed_data=readdlm("Annotated_Unlogged_BA11Data.csv",',');
 print("data loaded")
 

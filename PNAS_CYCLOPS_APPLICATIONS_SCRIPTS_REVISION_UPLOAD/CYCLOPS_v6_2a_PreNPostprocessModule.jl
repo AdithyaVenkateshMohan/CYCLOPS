@@ -265,45 +265,45 @@ function best_shift_cos(list1,list2,conversion_flag)
     bestlist
 end
 #####################################################################################################################
-function Compile_MultiCore_Cosinor_Statistics(annotated_data::Array{Any,2},PREDICTED_PHASELIST::Array{Float64,1},NumericStartCol=4,n_shifts=20) 
+# function Compile_MultiCore_Cosinor_Statistics(annotated_data::Array{Any,2},PREDICTED_PHASELIST::Array{Float64,1},NumericStartCol=4,n_shifts=20) 
 
-alldata_annot=annotated_data[1:end ,1:(NumericStartCol-1)];
-alldata_data=Array{Float64}(annotated_data[2:end , NumericStartCol:end]);
+# alldata_annot=annotated_data[1:end ,1:(NumericStartCol-1)];
+# alldata_data=Array{Float64}(annotated_data[2:end , NumericStartCol:end]);
 
-ngenes=size(alldata_data)[1]
-rowbin=Int(floor(ngenes/5));
-tic()
-estimated_phaselist=vec(PREDICTED_PHASELIST)
-c1=@spawn MultiCore_Cosinor_Statistics(alldata_data[(1:(1*rowbin)),:],estimated_phaselist) ;
-c2=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+1*rowbin):(2*rowbin)),:],estimated_phaselist,n_shifts); 
-c3=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+2*rowbin):(3*rowbin)),:],estimated_phaselist,n_shifts);
-c4=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+3*rowbin):(4*rowbin)),:],estimated_phaselist,n_shifts); 
-c5=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+4*rowbin):ngenes),:],estimated_phaselist,n_shifts);
+# ngenes=size(alldata_data)[1]
+# rowbin=Int(floor(ngenes/5));
+# tic()
+# estimated_phaselist=vec(PREDICTED_PHASELIST)
+# c1=@spawn MultiCore_Cosinor_Statistics(alldata_data[(1:(1*rowbin)),:],estimated_phaselist) ;
+# c2=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+1*rowbin):(2*rowbin)),:],estimated_phaselist,n_shifts); 
+# c3=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+2*rowbin):(3*rowbin)),:],estimated_phaselist,n_shifts);
+# c4=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+3*rowbin):(4*rowbin)),:],estimated_phaselist,n_shifts); 
+# c5=@spawn MultiCore_Cosinor_Statistics(alldata_data[((1+4*rowbin):ngenes),:],estimated_phaselist,n_shifts);
 
-PrbPval1,PrbPhase1,PrbAmp1,PrbFitMean1,PrbMean1,PrbRsq1=fetch(c1);
-PrbPval2,PrbPhase2,PrbAmp2,PrbFitMean2,PrbMean2,PrbRsq2=fetch(c2);
-PrbPval3,PrbPhase3,PrbAmp3,PrbFitMean3,PrbMean3,PrbRsq3=fetch(c3);
-PrbPval4,PrbPhase4,PrbAmp4,PrbFitMean4,PrbMean4,PrbRsq4=fetch(c4);
-PrbPval5,PrbPhase5,PrbAmp5,PrbFitMean5,PrbMean5,PrbRsq5=fetch(c5);
-toc()
+# PrbPval1,PrbPhase1,PrbAmp1,PrbFitMean1,PrbMean1,PrbRsq1=fetch(c1);
+# PrbPval2,PrbPhase2,PrbAmp2,PrbFitMean2,PrbMean2,PrbRsq2=fetch(c2);
+# PrbPval3,PrbPhase3,PrbAmp3,PrbFitMean3,PrbMean3,PrbRsq3=fetch(c3);
+# PrbPval4,PrbPhase4,PrbAmp4,PrbFitMean4,PrbMean4,PrbRsq4=fetch(c4);
+# PrbPval5,PrbPhase5,PrbAmp5,PrbFitMean5,PrbMean5,PrbRsq5=fetch(c5);
+# toc()
 
-PrbPval=vcat(PrbPval1,PrbPval2,PrbPval3,PrbPval4,PrbPval5);
-PrbPhase=vcat(PrbPhase1,PrbPhase2,PrbPhase3,PrbPhase4,PrbPhase5);
-PrbAmp=vcat(PrbAmp1,PrbAmp2,PrbAmp3,PrbAmp4,PrbAmp5);
-PrbMean=vcat(PrbMean1,PrbMean2,PrbMean3,PrbMean4,PrbMean5);
-PrbFitMean=vcat(PrbFitMean1,PrbFitMean2,PrbFitMean3,PrbFitMean4,PrbFitMean5);
-PrbRsq=vcat(PrbRsq1,PrbRsq2,PrbRsq3,PrbRsq4,PrbRsq5);
+# PrbPval=vcat(PrbPval1,PrbPval2,PrbPval3,PrbPval4,PrbPval5);
+# PrbPhase=vcat(PrbPhase1,PrbPhase2,PrbPhase3,PrbPhase4,PrbPhase5);
+# PrbAmp=vcat(PrbAmp1,PrbAmp2,PrbAmp3,PrbAmp4,PrbAmp5);
+# PrbMean=vcat(PrbMean1,PrbMean2,PrbMean3,PrbMean4,PrbMean5);
+# PrbFitMean=vcat(PrbFitMean1,PrbFitMean2,PrbFitMean3,PrbFitMean4,PrbFitMean5);
+# PrbRsq=vcat(PrbRsq1,PrbRsq2,PrbRsq3,PrbRsq4,PrbRsq5);
 
-PrbPtr= (PrbAmp + PrbFitMean) ./  (PrbFitMean - PrbAmp)
-PrbBon=Bonferroni_Adjust(PrbPval);
+# PrbPtr= (PrbAmp + PrbFitMean) ./  (PrbFitMean - PrbAmp)
+# PrbBon=Bonferroni_Adjust(PrbPval);
 
-cosinor_output=hcat(PrbPval,PrbBon,PrbPhase,PrbAmp,PrbFitMean,PrbMean,PrbRsq,PrbPtr)
-headers=["pval","bon_pval","phase","amp","fitmean","mean","rsq","ptr"]
-headers=reshape(headers,1,length(headers))
+# cosinor_output=hcat(PrbPval,PrbBon,PrbPhase,PrbAmp,PrbFitMean,PrbMean,PrbRsq,PrbPtr)
+# headers=["pval","bon_pval","phase","amp","fitmean","mean","rsq","ptr"]
+# headers=reshape(headers,1,length(headers))
 
-cosinor_output=vcat(headers,cosinor_output)
-cosinor_output=hcat(alldata_annot,cosinor_output)
-cosinor_output
-end
+# cosinor_output=vcat(headers,cosinor_output)
+# cosinor_output=hcat(alldata_annot,cosinor_output)
+# cosinor_output
+# end
 
 end

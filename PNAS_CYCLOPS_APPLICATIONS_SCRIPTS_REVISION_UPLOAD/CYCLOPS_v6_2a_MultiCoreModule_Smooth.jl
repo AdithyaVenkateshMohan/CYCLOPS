@@ -1,9 +1,14 @@
 module CYCLOPS_v6_2a_MultiCoreModule_Smooth
 
+include("CYCLOPS_v6_2a_AutoEncoderModule_multi.jl")
+include("CYCLOPS_v6_2a_PreNPostprocessModule.jl")
+
+
+using Base.Threads
 using StatsBase
 using MultivariateStats
-using CYCLOPS_v6_2a_AutoEncoderModule_multi
-using CYCLOPS_v6_2a_PreNPostprocessModule
+using .CYCLOPS_v6_2a_AutoEncoderModule_multi
+using .CYCLOPS_v6_2a_PreNPostprocessModule
 
 export backgroundmetrics_global_eigen
 export multicore_backgroundmetrics_global_eigen
@@ -138,11 +143,11 @@ end
 ###########################################################################
 function multicore_backgroundmetrics_global_eigen(seed_ldata::Array{Float64,2},ESize::Integer,N_best::Integer,N_trials::Integer)
 
-	a1=@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
-	a2=@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
-	a3=@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
-	a4=@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
-	a5=@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
+	a1=Base.Threads.@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
+	a2=Base.Threads.@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
+	a3=Base.Threads.@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
+	a4=Base.Threads.@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
+	a5=Base.Threads.@spawn backgroundmetrics_global_eigen(seed_ldata,ESize,N_best,Int(N_trials/5));
 
 
 	global1=fetch(a1);

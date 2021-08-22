@@ -21,14 +21,15 @@ using Distributions
 @everywhere include("CYCLOPS_v6_2a_MultiCoreModule_Smooth.jl")
 
 
-using CYCLOPS_v6_2a_AutoEncoderModule_multi
-using CYCLOPS_v6_2a_Seed
-using CYCLOPS_v6_2a_PreNPostprocessModule
-using CYCLOPS_v6_2a_CircularStats_U
-using CYCLOPS_v6_2a_MultiCoreModule_Smooth
+using .CYCLOPS_v6_2a_AutoEncoderModule_multi
+using .CYCLOPS_v6_2a_Seed
+using .CYCLOPS_v6_2a_PreNPostprocessModule
+using .CYCLOPS_v6_2a_CircularStats_U
+using .CYCLOPS_v6_2a_MultiCoreModule_Smooth
 
  
-using PyPlot
+# using PyPlot
+using DelimitedFiles
 #indirlaval=string(basedir,"/Documents/LungWork_March2015/LAVAL/UsableData");
 #indirgrng=string(basedir,"/Documents/LungWork_March2015/GRNG/UsableData");
 #homologuedir=string(basedir,"/Google Drive/BHTC_Homologues")
@@ -39,13 +40,13 @@ homologuedir=netdir;
 
 ############################################################
 cd(indirlaval);
-fullnonseed_data_laval=readcsv("AnnotatedLAVALData_March3_2015.csv");
+fullnonseed_data_laval=readelm("AnnotatedLAVALData_March3_2015.csv");
 
 cd(indirgrng);
-fullnonseed_data_grng=readcsv("AnnotatedGRNGData_March3_2015.csv");
+fullnonseed_data_grng=readelm("AnnotatedGRNGData_March3_2015.csv");
 
 cd(homologuedir)
-seed_homologues=readcsv("LungCyclerHomologues.csv");
+seed_homologues=readelm("LungCyclerHomologues.csv");
 homologue_symbol_list=seed_homologues[2:end,2];
 
 ############################################################
@@ -91,7 +92,7 @@ a_l =CYCLOPS_Order_multicore(outs_l,norm_seed_data_l,N_trials);
 estimated_phaselist_g,bestnet_g,global_var_metrics_g=a_g;
 estimated_phaselist_l,bestnet_l,global_var_metrics_l=a_l;
 
-
+print(estimated_phaselist_g)
 global_smooth_metrics_g            = smoothness_measures(seed_data_dispersion_g,norm_seed_data_g,estimated_phaselist_g)
 global_metrics_g                   = global_var_metrics_g
 
@@ -118,91 +119,91 @@ end
 estimated_phaselist_g=mod.(estimated_phaselist_g,2*pi)
 estimated_phaselist_l=mod.(estimated_phaselist_l,2*pi)
 
-cosinor_grng=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_grng,estimated_phaselist_g,4,24)
-cosinor_laval=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_laval,estimated_phaselist_l,4,24)
+# cosinor_grng=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_grng,estimated_phaselist_g,4,24)
+# cosinor_laval=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_laval,estimated_phaselist_l,4,24)
 
-sig_grng=Filter_Cosinor_Output(cosinor_grng,.05,0,1.66)
-sig_laval=Filter_Cosinor_Output(cosinor_laval,.05,0,1.66)
+# sig_grng=Filter_Cosinor_Output(cosinor_grng,.05,0,1.66)
+# sig_laval=Filter_Cosinor_Output(cosinor_laval,.05,0,1.66)
 
-common_g_l=intersect(sig_grng[2:end,1],sig_laval[2:end,1])
-rows_laval_g_l=findin(sig_laval[:,1],common_g_l)
-rows_grng_g_l=findin(sig_grng[:,1],common_g_l)
+# common_g_l=intersect(sig_grng[2:end,1],sig_laval[2:end,1])
+# rows_laval_g_l=findin(sig_laval[:,1],common_g_l)
+# rows_grng_g_l=findin(sig_grng[:,1],common_g_l)
 
-use_grng_g_l=mod.(sig_grng[rows_grng_g_l,6],2*pi)
-use_laval_g_l=mod.(sig_laval[rows_laval_g_l,6],2*pi)
+# use_grng_g_l=mod.(sig_grng[rows_grng_g_l,6],2*pi)
+# use_laval_g_l=mod.(sig_laval[rows_laval_g_l,6],2*pi)
 
 
-use_laval_adj1,estimated_phaselist_l_adj1=best_shift_cos2(use_laval_g_l,use_grng_g_l,estimated_phaselist_l,"radians")
+# use_laval_adj1,estimated_phaselist_l_adj1=best_shift_cos2(use_laval_g_l,use_grng_g_l,estimated_phaselist_l,"radians")
 
-scatter(use_laval_adj1,use_grng_g_l,s=.5,color="DarkBlue")
+# scatter(use_laval_adj1,use_grng_g_l,s=.5,color="DarkBlue")
 
-cosinor_laval=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_laval,estimated_phaselist_l_adj1,4,24)
+# cosinor_laval=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_laval,estimated_phaselist_l_adj1,4,24)
 ####################################
 # Align with Ebox (Par-BZip) phase
 #####################################
-eboxgenes=["DBP","HLF","TEF"]
+# eboxgenes=["DBP","HLF","TEF"]
 
-eboxphases_laval=cosinor_laval[findin(cosinor_laval[:,2],eboxgenes),:]
-eboxphases_grng=cosinor_grng[findin(cosinor_grng[:,2],eboxgenes),:]
+# eboxphases_laval=cosinor_laval[findin(cosinor_laval[:,2],eboxgenes),:]
+# eboxphases_grng=cosinor_grng[findin(cosinor_grng[:,2],eboxgenes),:]
 
-laval_criteria=((eboxphases_laval[:,4].<.05) & ( eboxphases_laval[:,11].>1.25) & ( eboxphases_laval[:,9].>100))
-grng_criteria=((eboxphases_grng[:,4].<.05) & ( eboxphases_grng[:,11].>1.25) & ( eboxphases_laval[:,9].>100))
+# laval_criteria=((eboxphases_laval[:,4].<.05) & ( eboxphases_laval[:,11].>1.25) & ( eboxphases_laval[:,9].>100))
+# grng_criteria=((eboxphases_grng[:,4].<.05) & ( eboxphases_grng[:,11].>1.25) & ( eboxphases_laval[:,9].>100))
 
-eboxphases_laval=eboxphases_laval[findin(laval_criteria,true),:]
-eboxphases_grng=eboxphases_grng[findin(grng_criteria,true),:]
+# eboxphases_laval=eboxphases_laval[findin(laval_criteria,true),:]
+# eboxphases_grng=eboxphases_grng[findin(grng_criteria,true),:]
 
-eboxphases_laval=Array{Float64}(eboxphases_laval[:,6])
-eboxphases_grng=Array{Float64}(eboxphases_grng[:,6])
+# eboxphases_laval=Array{Float64}(eboxphases_laval[:,6])
+# eboxphases_grng=Array{Float64}(eboxphases_grng[:,6])
 
-eboxphases=append!(eboxphases_laval,eboxphases_grng)
-eboxphase=Circular_Mean(eboxphases)
+# eboxphases=append!(eboxphases_laval,eboxphases_grng)
+# eboxphase=Circular_Mean(eboxphases)
 
-estimated_phaselist_g_adj_final=mod.(estimated_phaselist_g .- eboxphase+(pi),2*pi)  ##ebox genes in mouse lung peak on average CT 11.5 
-estimated_phaselist_l_adj_final=mod.(estimated_phaselist_l_adj1 .- eboxphase+(pi),2*pi)  ##ebox genes in mouse lung peak on average CT 11.5 
+# estimated_phaselist_g_adj_final=mod.(estimated_phaselist_g .- eboxphase+(pi),2*pi)  ##ebox genes in mouse lung peak on average CT 11.5 
+# estimated_phaselist_l_adj_final=mod.(estimated_phaselist_l_adj1 .- eboxphase+(pi),2*pi)  ##ebox genes in mouse lung peak on average CT 11.5 
 
 
 
-Nday=length(findin((estimated_phaselist_l_adj_final .>pi),true))
-Nnight=length(findin((estimated_phaselist_l_adj_final .<pi),true))
+# Nday=length(findin((estimated_phaselist_l_adj_final .>pi),true))
+# Nnight=length(findin((estimated_phaselist_l_adj_final .<pi),true))
 
-if (Nday<Nnight)
-    estimated_phaselist_l_adj_final=mod(2*pi-estimated_phaselist_l_adj_final,2*pi)
-    estimated_phaselist_g_adj_final=mod(2*pi-estimated_phaselist_g_adj_final,2*pi)
-end
+# if (Nday<Nnight)
+#     estimated_phaselist_l_adj_final=mod(2*pi-estimated_phaselist_l_adj_final,2*pi)
+#     estimated_phaselist_g_adj_final=mod(2*pi-estimated_phaselist_g_adj_final,2*pi)
+# end
 
 
 
 ###################################
-cosinor_grng=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_grng,estimated_phaselist_g_adj_final,4,24)
-cosinor_laval=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_laval,estimated_phaselist_l_adj_final,4,24)
+# cosinor_grng=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_grng,estimated_phaselist_g_adj_final,4,24)
+# cosinor_laval=Compile_MultiCore_Cosinor_Statistics(fullnonseed_data_laval,estimated_phaselist_l_adj_final,4,24)
 
-nsig_grng=Filter_Cosinor_Output(cosinor_grng,.05,0,1.66)
-nsig_laval=Filter_Cosinor_Output(cosinor_laval,.05,0,1.66)
+# nsig_grng=Filter_Cosinor_Output(cosinor_grng,.05,0,1.66)
+# nsig_laval=Filter_Cosinor_Output(cosinor_laval,.05,0,1.66)
 
-common_g_l=intersect(nsig_grng[2:end,1],nsig_laval[2:end,1])
+# common_g_l=intersect(nsig_grng[2:end,1],nsig_laval[2:end,1])
 
-cd(outdir);
+# cd(outdir);
 #writecsv("Laval_Sample_Phaselist.csv",estimated_phaselist_l_adj_final);
 #writecsv("GRNG_Sample_Phaselist.csv",estimated_phaselist_g_adj_final);
 #writecsv("Laval_Cosinor_Output.csv",cosinor_laval);
 #writecsv("GRNG_Cosinor_Output.csv",cosinor_grng);
 
 ############################################################
-sig_laval=Filter_Cosinor_Output(cosinor_laval,.05,0,1.666)
-sig_grng=Filter_Cosinor_Output(cosinor_grng,.05,0,1.666)
+# sig_laval=Filter_Cosinor_Output(cosinor_laval,.05,0,1.666)
+# sig_grng=Filter_Cosinor_Output(cosinor_grng,.05,0,1.666)
 
 ############################################################
-common_g_l=intersect(sig_grng[2:end,1],sig_laval[2:end,1])
+# common_g_l=intersect(sig_grng[2:end,1],sig_laval[2:end,1])
 
-rows_laval_g_l=findin(sig_laval[:,1],common_g_l)
-rows_grng_g_l=findin(sig_grng[:,1],common_g_l)
+# rows_laval_g_l=findin(sig_laval[:,1],common_g_l)
+# rows_grng_g_l=findin(sig_grng[:,1],common_g_l)
 
-use_grng_g_l=sig_grng[rows_grng_g_l,6]
-use_laval_g_l=sig_laval[rows_laval_g_l,6]
+# use_grng_g_l=sig_grng[rows_grng_g_l,6]
+# use_laval_g_l=sig_laval[rows_laval_g_l,6]
 ############################################################
 # Acrophase Comparison
 ############################################################
-close()
+# close()
 ylabp=[0,pi/2,pi,3*pi/2,2*pi]
 ylabs=[0, "","π","","2π"]
 xlabp=[0,pi/2,pi,3*pi/2,2*pi]

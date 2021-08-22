@@ -6,7 +6,7 @@ addprocs(0)
 #################
 @everywhere basedir=homedir();
 # @everywhere netdir=string(basedir,"/Desktop/CYCLOPS_UPDATE_SHARE");
-@everywhere netdir = "E:\\AI\\Medical\\Julia-Kri\\CYCLOPS\\PNAS_CYCLOPS_PROGRAM_SCRIPTS_REVISION_UPLOAD\\"
+@everywhere netdir = "..\\PNAS_CYCLOPS_PROGRAM_SCRIPTS_REVISION_UPLOAD\\"
 @everywhere cd(netdir);
 
 
